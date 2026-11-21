@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+}
+
+:root,
+.light {
+  --background: #faf9f7;
+  --foreground: #111827;
+  --surface: #f4f3ef;
+  --surface-elevated: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --muted: #eeede8;
+  --muted-foreground: #525d6e;
+  --border: #e3e5ea;
+  --border-strong: #cfd4dd;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f7;
+  --secondary-foreground: #1e293b;
+  --accent: #eff4ff;
+  --accent-foreground: #1d4ed8;
+  --ring: #2563eb;
+
+  --code-bg: #f6f7f9;
+  --code-header-bg: #eef0f4;
+  --code-line-highlight: rgba(37, 99, 235, 0.1);
+}
+
+.dark {
+  --background: #0b0d11;
+  --foreground: #eceff4;
+  --surface: #11141b;
+  --surface-elevated: #161b24;
+  --card: #12161e;
+  --card-foreground: #eceff4;
+  --muted: #1a202c;
+  --muted-foreground: #8f99ab;
+  --border: rgba(255, 255, 255, 0.085);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --primary: #4f8ff7;
+  --primary-foreground: #09101d;
+  --secondary: #181e29;
+  --secondary-foreground: #dce3ee;
+  --accent: rgba(79, 143, 247, 0.14);
+  --accent-foreground: #7cb2ff;
+  --ring: #4f8ff7;
+
+  --code-bg: #0e1218;
+  --code-header-bg: #141923;
+  --code-line-highlight: rgba(79, 143, 247, 0.15);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--foreground);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Editorial prose helper */
+.editorial-prose {
+  font-size: 0.96875rem;
+  line-height: 1.72;
+  color: var(--foreground);
+}
+
+/* Subtle custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Animated dashed flow for async edges in HLD diagram */
+@keyframes hld-dash-flow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hld-edge-flow {
+  animation: hld-dash-flow 1.4s linear infinite;
+}
+
+/* Mermaid SVG cleanup */
+.mermaid-host svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
