@@ -7,7 +7,6 @@ import {
   Clock,
   Cpu,
   Layers,
-  Lock,
   Network,
   X,
 } from 'lucide-react';
@@ -38,10 +37,12 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
   const location = useLocation();
   const { isRead, isBookmarked, readIds, bookmarkedIds, sidebarCollapsed } = useReaderState();
   const [filterMode, setFilterMode] = useState<'all' | 'bookmarked'>('all');
-  const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({
-    1: true,
-    5: true,
-  });
+  const [expandedOverrides, setExpandedOverrides] = useState<Record<number, boolean>>({});
+
+  const activeDayNumber = useMemo(() => {
+    const match = location.pathname.match(/^\/day\/(\d+)/);
+    return match ? Number(match[1]) : 1;
+  }, [location.pathname]);
 
   const allAvailable = useMemo(() => getAllAvailableLessons(), []);
   const bookmarkedLessons = useMemo(
@@ -53,8 +54,14 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
     [allAvailable, readIds],
   );
 
+  const isDayExpanded = (dayNumber: number) =>
+    expandedOverrides[dayNumber] ?? dayNumber === activeDayNumber;
+
   const toggleDay = (dayNumber: number) => {
-    setExpandedDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }));
+    setExpandedOverrides((prev) => ({
+      ...prev,
+      [dayNumber]: !(prev[dayNumber] ?? dayNumber === activeDayNumber),
+    }));
   };
 
   const sidebarBody = (
@@ -208,40 +215,10 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
         ) : (
           CURRICULUM.map((day) => {
             const lessons = getLessonsForDay(day);
-            const isComplete = day.status === 'complete';
             const dayReadCount = lessons.filter((l) => readIds.has(l.id)).length;
             const dayPercent =
               lessons.length > 0 ? Math.round((dayReadCount / lessons.length) * 100) : 0;
-            const isExpanded = Boolean(expandedDays[day.dayNumber]);
-            const dayPlaceholderPath = `/day/${day.dayNumber}`;
-            const isDayRouteActive = location.pathname === dayPlaceholderPath;
-
-            if (!isComplete) {
-              return (
-                <Link
-                  key={day.dayNumber}
-                  to={dayPlaceholderPath}
-                  onClick={onCloseMobile}
-                  className={cn(
-                    'block rounded-lg border border-transparent px-2.5 py-2 transition-colors',
-                    isDayRouteActive
-                      ? 'border-border bg-card text-foreground'
-                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Lock className="h-3 w-3 shrink-0 opacity-60" />
-                      <span className="font-mono text-[11px] font-semibold">Day {day.dayNumber}</span>
-                    </div>
-                    <span className="rounded border border-border bg-card px-1.5 py-0.25 font-mono text-[9.5px] text-muted-foreground">
-                      Phase 2
-                    </span>
-                  </div>
-                  <div className="mt-1 truncate pl-5 text-[11.5px] opacity-80">{day.title}</div>
-                </Link>
-              );
-            }
+            const isExpanded = isDayExpanded(day.dayNumber);
 
             return (
               <div
@@ -262,7 +239,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
                       ) : (
                         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       )}
-                      <span className="font-mono text-[11px] font-semibold text-primary">
+                      <span className="shrink-0 whitespace-nowrap font-mono text-[11px] font-semibold text-primary">
                         Day {day.dayNumber}
                       </span>
                       <span className="truncate text-xs font-semibold text-foreground">

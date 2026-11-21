@@ -5,7 +5,6 @@ import {
   Clock,
   Cpu,
   Layers,
-  Lock,
   Network,
 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -29,7 +28,7 @@ export function HomePage() {
     () => availableLessons.filter((l) => bookmarkedIds.has(l.id)),
     [availableLessons, bookmarkedIds],
   );
-  const totalAvailableMinutes = useMemo(
+  const totalReadingMinutes = useMemo(
     () => availableLessons.reduce((acc, l) => acc + l.estimatedMinutes, 0),
     [availableLessons],
   );
@@ -40,6 +39,11 @@ export function HomePage() {
   );
   const resumeTarget = lastVisitedPath ?? (firstUnread ? getLessonPath(firstUnread) : '/');
 
+  const scrollToDay = (dayNumber: number) => {
+    const el = document.getElementById(`syllabus-day-${dayNumber}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <AppShell>
       <div className="mx-auto max-w-[980px] space-y-10 pb-12">
@@ -48,7 +52,7 @@ export function HomePage() {
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted-foreground">
             <span>4.5 YOE SDE INTERVIEW HANDBOOK</span>
             <span>·</span>
-            <span>PASSIVE VISUAL READING EDITION</span>
+            <span>COMPLETE 7-DAY EDITION</span>
           </div>
 
           <div className="space-y-3">
@@ -56,9 +60,9 @@ export function HomePage() {
               7-Day Staff Reader
             </h1>
             <p className="max-w-[700px] text-[15.5px] leading-relaxed text-muted-foreground">
-              A calm, textbook-grade study reader for Senior / SDE-2+ interviews. Absorb DSA
-              invariants through step-by-step visual dry runs, production Java LLD with UML
-              diagrams, and interactive HLD architectures — zero blank editors, zero countdown
+              A calm, textbook-grade study reader for Senior / SDE-2+ interviews. Absorb 35 DSA
+              patterns via step-by-step visual dry runs, 7 production Java LLD systems with UML
+              diagrams, and 7 interactive HLD architectures — zero blank editors, zero countdown
               timers.
             </p>
           </div>
@@ -71,8 +75,8 @@ export function HomePage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="default">
-              <Link to="/day/5/dsa/day5-edit-distance">
-                <span>Jump to Day 5 · Dynamic Programming</span>
+              <Link to="/day/7/hld/day7-payment-stripe-ledger">
+                <span>Featured · Stripe Ledger HLD</span>
               </Link>
             </Button>
           </div>
@@ -80,7 +84,7 @@ export function HomePage() {
           {/* Minimal Editorial Stats Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3">
             <div className="rounded-lg border border-border bg-card px-4 py-3">
-              <div className="text-[11px] font-medium text-muted-foreground">Phase 1 Progress</div>
+              <div className="text-[11px] font-medium text-muted-foreground">Overall Progress</div>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="font-mono text-xl font-semibold text-foreground">
                   {readCount}/{availableLessons.length}
@@ -95,9 +99,9 @@ export function HomePage() {
             </div>
 
             <div className="rounded-lg border border-border bg-card px-4 py-3">
-              <div className="text-[11px] font-medium text-muted-foreground">Live Reading Time</div>
+              <div className="text-[11px] font-medium text-muted-foreground">Total Reading Time</div>
               <div className="mt-1 font-mono text-xl font-semibold text-foreground">
-                {formatMinutes(totalAvailableMinutes)}
+                {formatMinutes(totalReadingMinutes)}
               </div>
             </div>
 
@@ -109,9 +113,9 @@ export function HomePage() {
             </div>
 
             <div className="rounded-lg border border-border bg-card px-4 py-3">
-              <div className="text-[11px] font-medium text-muted-foreground">Daily Format</div>
+              <div className="text-[11px] font-medium text-muted-foreground">Full Curriculum</div>
               <div className="mt-1 font-mono text-sm font-semibold text-foreground pt-1">
-                5 DSA · 1 LLD · 1 HLD
+                35 DSA · 7 LLD · 7 HLD
               </div>
             </div>
           </div>
@@ -153,65 +157,47 @@ export function HomePage() {
 
         {/* Complete 7-Day Syllabus */}
         <section className="space-y-5">
-          <div className="flex items-baseline justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold tracking-tight text-foreground">
                 7-Day Reading Syllabus
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Days 1 and 5 are 100% complete in Phase 1. Days 2, 3, 4, 6, and 7 unlock in Phase 2.
+                All 7 days (49 interactive lessons) complete — jump straight to any day or lesson below.
               </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5" aria-label="Jump to day">
+              {CURRICULUM.map((day) => (
+                <button
+                  key={day.dayNumber}
+                  type="button"
+                  onClick={() => scrollToDay(day.dayNumber)}
+                  className="rounded-md border border-border bg-card px-2.5 py-1 font-mono text-[11px] font-medium text-muted-foreground hover:border-border-strong hover:text-foreground transition-colors cursor-pointer"
+                >
+                  Day {day.dayNumber}
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="space-y-4">
             {CURRICULUM.map((day) => {
               const lessons = getLessonsForDay(day);
-              const isComplete = day.status === 'complete';
               const dayRead = lessons.filter((l) => readIds.has(l.id)).length;
               const pct = lessons.length > 0 ? Math.round((dayRead / lessons.length) * 100) : 0;
-
-              if (!isComplete) {
-                return (
-                  <Link
-                    key={day.dayNumber}
-                    to={`/day/${day.dayNumber}`}
-                    className="block rounded-xl border border-border/80 bg-surface/55 p-5 hover:border-border-strong hover:bg-surface transition-colors"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-xs font-semibold text-muted-foreground">
-                          DAY {day.dayNumber}
-                        </span>
-                        <h3 className="text-base font-semibold text-foreground/85">{day.title}</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-muted-foreground">
-                          ~{formatMinutes(day.estimatedMinutes)}
-                        </span>
-                        <Badge variant="muted">
-                          <Lock className="h-3 w-3" />
-                          Coming in Phase 2
-                        </Badge>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground max-w-3xl">
-                      {day.summary}
-                    </p>
-                  </Link>
-                );
-              }
 
               return (
                 <article
                   key={day.dayNumber}
-                  className="rounded-xl border border-border bg-card overflow-hidden"
+                  id={`syllabus-day-${day.dayNumber}`}
+                  className="scroll-mt-20 rounded-xl border border-border bg-card overflow-hidden"
                 >
                   {/* Day Header */}
                   <div className="border-b border-border bg-surface/75 px-5 py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="primary" className="font-mono">
                             DAY {day.dayNumber}
                           </Badge>
